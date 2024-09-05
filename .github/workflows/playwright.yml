@@ -12,6 +12,13 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright:v1.46.1-jammy
     steps:
+      - name: Load env variables
+        uses: actions/github-script@v6
+        with:
+          script: |
+            process.env.QUALITYWATCHER_API_KEY = '${{ secrets.QUALITYWATCHER_API_KEY }}'
+            process.env.EMAIL = '${{ secrets.EMAIL }}'
+            process.env.NOTIFY_URL = '${{ secrets.NOTIFY_URL }}'
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
