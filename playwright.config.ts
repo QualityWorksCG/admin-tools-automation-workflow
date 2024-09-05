@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
-
+import axios from 'axios';
 // Load environment variables from .env file
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
@@ -21,19 +21,36 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['list'],  // Keep the default list reporter
-    // [
-    //   '@qualitywatcher/playwright-reporter',
-    //   {
-    //     apiKey: process.env.QUALITY_WATCHER_API_KEY,
-    //     projectId: process.env.QUALITY_WATCHER_PROJECT_ID,
-    //     testRunName: `${new Date().toLocaleDateString('en-US')} - automated run`,
-    //     description: 'Triggered by automated run',
-    //     includeAllCases: true,
-    //     complete: true,
-    //     includeCaseWithoutId: true,
-    //     excludeSkipped: false,
-    //   },
-    // ],
+    ["@qualitywatcher/playwright-reporter", {
+      apiKey: "",
+      projectId: 14,
+      testRunName: `Snowflake Regression Tests - ${new Date().toLocaleDateString(
+        'en-US'
+      )}`,
+      description: `Regression tests for Snowflake running from pipeline`,
+      includeAllCases: true,
+      complete: false,
+      includeCaseWithoutId: true,
+      excludeSkipped: false,
+      report: true,
+      parentSuiteTitle: "Login Feature",
+      generateShareableLink: true,
+      onEnd: async (runUrl: string, shareUrl: string) => {
+        const email = process.env.EMAIL
+        const notifyUrl = process.env.NOTIFY_URL!
+        const response = await axios.post(notifyUrl, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          data: {
+            runUrl,
+            shareUrl,
+            email
+          }
+        })
+        console.log(response.data.message)
+      }
+    }]
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
